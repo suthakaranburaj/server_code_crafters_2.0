@@ -39,3 +39,7 @@ model user {
   updatedAt                           DateTime                        @default(now()) @updatedAt
 }
 
+model buy_stocks {
+  id                                  Int                             @id @default(autoincrement())
+}
+
