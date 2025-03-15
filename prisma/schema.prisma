@@ -50,6 +50,9 @@ model user_amount {
   status                              Boolean?                        @default(true)
   user_id                             Int
   is_current                          Boolean?                        @default(false)
+  amount_spend                        Int?
+  type                                String?                         @db.VarChar(255)
+  profit                              Boolean?                        @default(false)
   user                                user                            @relation(fields: [user_id], references: [user_id])
   createdAt                           DateTime                        @default(now())
   updatedAt                           DateTime                        @default(now()) @updatedAt
@@ -68,3 +71,15 @@ model buy_stocks {
   updatedAt       DateTime     @default(now()) @updatedAt
 }
 
+model stocks_records {
+  stocks_records_id   Int      @id @default(autoincrement())
+  user_id             Int
+  type                String   
+  company_name        String?
+  quantity            Int?
+  price               Int?     
+  amount_spend        Int?     
+  profit              Int?     
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @default(now()) @updatedAt
+}

@@ -117,13 +117,14 @@ export const add_money = asyncHandler(async (req, res) => {
 
 export const get_all_transaction_records = asyncHandler(async (req, res) => {
     const userInfo = req.userInfo;
+    // const { type } = req.params
     console.log(userInfo);
     const transactions = await knex("user_amount")
         .select("*")
         .where({
             user_id: userInfo.user_id,
             status: 0,
-            is_current: 0
+            is_current: 0,
         })
         .orderBy("createdAt", "desc");
 

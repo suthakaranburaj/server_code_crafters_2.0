@@ -40,7 +40,6 @@ export const buy_sell_stocks = asyncHandler(async (req, res) => {
             return sendResponse(res, statusType.BAD_REQUEST, "User balance not found");
         }
 
-        // Transaction handler
         await knex.transaction(async (trx) => {
             if (type === "buy") {
                 const totalCost = quantity * currentAmount;
@@ -49,7 +48,7 @@ export const buy_sell_stocks = asyncHandler(async (req, res) => {
                     throw new Error("Insufficient balance");
                 }
 
-                // Check existing stock
+                // Existing stock check and update
                 const [existingStock] = await trx("buy_stocks")
                     .where({
                         user_id: user.user_id,
@@ -87,13 +86,26 @@ export const buy_sell_stocks = asyncHandler(async (req, res) => {
                 const newBalance = currentUserAmount.amount - totalCost;
                 await trx("user_amount")
                     .where({ user_amount_id: currentUserAmount.user_amount_id })
-                    .update({ is_current: false ,status:false});
+                    .update({ is_current: false, status: false, profit:false });
 
                 await trx("user_amount").insert({
                     user_id: user.user_id,
                     amount: newBalance,
                     status: true,
                     is_current: true,
+                    createdAt: knex.fn.now(),
+                    updatedAt: knex.fn.now()
+                });
+
+                // Record buy transaction
+                await trx("stocks_records").insert({
+                    user_id: user.user_id,
+                    type: "buy",
+                    company_name: company_name,
+                    quantity: quantity,
+                    price: currentAmount,
+                    amount_spend: totalCost,
+                    profit: 0,
                     createdAt: knex.fn.now(),
                     updatedAt: knex.fn.now()
                 });
@@ -114,13 +126,15 @@ export const buy_sell_stocks = asyncHandler(async (req, res) => {
 
                 const proceeds = quantity * currentAmount;
                 const newQuantity = existingStock.quantity - quantity;
+                const costBasis = existingStock.currentAmount * quantity;
+                const profit = (currentAmount - existingStock.currentAmount) * quantity;
 
                 // Update stock entry
                 if (newQuantity === 0) {
                     await trx("buy_stocks").where({ stock_id: existingStock.stock_id }).update({
                         quantity: 0,
                         is_current: false,
-                        status:1,
+                        status: false,
                         updatedAt: knex.fn.now()
                     });
                 } else {
@@ -134,13 +148,26 @@ export const buy_sell_stocks = asyncHandler(async (req, res) => {
                 const newBalance = currentUserAmount.amount + proceeds;
                 await trx("user_amount")
                     .where({ user_amount_id: currentUserAmount.user_amount_id })
-                    .update({ is_current: false,status:false });
+                    .update({ is_current: false, status: false,profit:true });
 
                 await trx("user_amount").insert({
                     user_id: user.user_id,
                     amount: newBalance,
                     status: true,
                     is_current: true,
+                    createdAt: knex.fn.now(),
+                    updatedAt: knex.fn.now()
+                });
+
+                // Record sell transaction
+                await trx("stocks_records").insert({
+                    user_id: user.user_id,
+                    type: "sell",
+                    company_name: company_name,
+                    quantity: quantity,
+                    price: currentAmount,
+                    amount_spend: costBasis,
+                    profit: profit,
                     createdAt: knex.fn.now(),
                     updatedAt: knex.fn.now()
                 });
@@ -152,3 +179,11 @@ export const buy_sell_stocks = asyncHandler(async (req, res) => {
         return sendResponse(res, statusType.BAD_REQUEST, error.message);
     }
 });
+
+export const get_all_stocks_records = asyncHandler(async(req,res)=>{
+    const user = req.userInfo;
+
+    const data = await knex("stocks_records").select("*").where({user_id:user.user_id});
+
+    return sendResponse(res, statusType.OK, data,`Records fetched successful`);
+})
