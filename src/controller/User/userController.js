@@ -194,7 +194,9 @@ export const get_current_user = asyncHandler(async (req, res) => {
         'user_amount.is_current':1,
         'user_amount.user_id':user.user_id,
     })
-    user.amount = amount.amount;
+    if(amount){
+        user.amount = amount.amount;
+    }
     // console.log(user)
     return sendResponse(res, true, user, "User detials fetched successfully!");
 });
