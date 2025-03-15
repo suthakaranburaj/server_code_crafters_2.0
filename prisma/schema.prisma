@@ -35,6 +35,21 @@ model user {
   insurances                          Boolean?                        @default(false)
   bonds                               Boolean?                        @default(false)
   role                                Role?
+  // user_amount                         Int?                     
+  createdAt                           DateTime                        @default(now())
+  updatedAt                           DateTime                        @default(now()) @updatedAt
+
+    // Relation to user_amount
+  user_amounts                       user_amount[]
+}
+
+model user_amount {
+  user_amount_id                      Int                             @id @default(autoincrement())
+  amount                              Int?
+  status                              Boolean?                        @default(true)
+  user_id                             Int
+  is_current                          Boolean?                        @default(false)
+  user                                user                            @relation(fields: [user_id], references: [user_id])
   createdAt                           DateTime                        @default(now())
   updatedAt                           DateTime                        @default(now()) @updatedAt
 }
