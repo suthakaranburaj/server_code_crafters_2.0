@@ -76,7 +76,7 @@ export async function save_user(req, res) {
             bonds: getOneOrZero(req.body.bonds),
             company_name: getObjOrNull(req.body.company_name)
         };
-
+console.log(obj);
         const validate = validateUserData(obj);
         if (!validate.status)
             return sendResponse(res, false, null, validate.message || "Validation Failed");
