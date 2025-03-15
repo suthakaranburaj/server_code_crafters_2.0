@@ -24,7 +24,7 @@ model user {
   email                               String?                         @unique
   image                               String?                         @unique
   phone                               String?                         @unique @db.VarChar(20)
-  username                            String?                         @unique
+  // username                            String?                         @unique
   salt                                String?                         @db.VarChar(255)
   password                            String?                         @db.VarChar(100)
   age                                 Int?

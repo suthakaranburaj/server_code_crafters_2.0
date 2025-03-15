@@ -70,7 +70,7 @@ export async function save_user(req, res) {
             name: getObjOrNull(req.body.name),
             email: getObjOrNull(req.body.email),
             phone: getObjOrNull(req.body.phone),
-            username: getObjOrNull(req.body.username),
+            // username: getObjOrNull(req.body.username),
             role: getObjOrNull(req.body.role),
             insurances: getOneOrZero(req.body.insurances),
             bonds: getOneOrZero(req.body.bonds),
@@ -104,15 +104,15 @@ export async function save_user(req, res) {
         if (checkphoneExists.exists)
             return sendResponse(res, false, null, checkphoneExists.message);
 
-        const checkNameExists = await checkExists(
-            "user",
-            "user_id",
-            user_id,
-            "username",
-            obj.username,
-            "The Username"
-        );
-        if (checkNameExists.exists) return sendResponse(res, false, null, checkNameExists.message);
+        // const checkNameExists = await checkExists(
+        //     "user",
+        //     "user_id",
+        //     user_id,
+        //     "username",
+        //     obj.username,
+        //     "The Username"
+        // );
+        // if (checkNameExists.exists) return sendResponse(res, false, null, checkNameExists.message);
 
         const checkCompany_nameExists = await checkExists(
             "user",
@@ -156,7 +156,7 @@ export async function save_user(req, res) {
                 return sendResponse(res, false, null, "Registration failed");
             }
             const [user] = await knex("user").where({ email: obj.email, status: 1 });
-            console.log(user)
+            // console.log(user)
             // Generate tokens
             const accessToken = generateAccessToken(user);
             const refreshToken = generateRefreshToken(user);
