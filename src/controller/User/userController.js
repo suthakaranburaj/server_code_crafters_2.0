@@ -187,6 +187,15 @@ export async function save_user(req, res) {
 
 export const get_current_user = asyncHandler(async (req, res) => {
     const user = req.userInfo;
+    const [amount] = await knex('user_amount')
+    .select('user_amount.amount')
+    .where({
+        'user_amount.status':1,
+        'user_amount.is_current':1,
+        'user_amount.user_id':user.user_id,
+    })
+    user.amount = amount.amount;
+    console.log(user)
     return sendResponse(res, true, user, "User detials fetched successfully!");
 });
 
