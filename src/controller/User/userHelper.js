@@ -11,7 +11,7 @@ export function validateUserData(data) {
 
     if (!phone || typeof phone !== 'string') return { status: false, message: "Phone Number not provided" };
 
-    if (!role || isNaN(role)) return { status: false, message: "Role not provided" };
+    // if (!role || isNaN(role)) return { status: false, message: "Role not provided" };
 
     return { status: true };
 }
