@@ -86,7 +86,7 @@ export const buy_sell_stocks = asyncHandler(async (req, res) => {
                 const newBalance = currentUserAmount.amount - totalCost;
                 await trx("user_amount")
                     .where({ user_amount_id: currentUserAmount.user_amount_id })
-                    .update({ is_current: false, status: false, profit:false });
+                    .update({ is_current: false, status: false, profit: false });
 
                 await trx("user_amount").insert({
                     user_id: user.user_id,
@@ -148,7 +148,7 @@ export const buy_sell_stocks = asyncHandler(async (req, res) => {
                 const newBalance = currentUserAmount.amount + proceeds;
                 await trx("user_amount")
                     .where({ user_amount_id: currentUserAmount.user_amount_id })
-                    .update({ is_current: false, status: false,profit:true });
+                    .update({ is_current: false, status: false, profit: true });
 
                 await trx("user_amount").insert({
                     user_id: user.user_id,
@@ -174,16 +174,26 @@ export const buy_sell_stocks = asyncHandler(async (req, res) => {
             }
         });
 
-        return sendResponse(res, statusType.OK, `Stocks ${type} operation successful`);
+        return sendResponse(res, statusType.SUCCESS, `Stocks ${type} operation successful`);
     } catch (error) {
         return sendResponse(res, statusType.BAD_REQUEST, error.message);
     }
 });
 
-export const get_all_stocks_records = asyncHandler(async(req,res)=>{
+export const get_all_stocks_records = asyncHandler(async (req, res) => {
     const user = req.userInfo;
 
-    const data = await knex("stocks_records").select("*").where({user_id:user.user_id});
+    const data = await knex("stocks_records").select("*").where({ user_id: user.user_id });
 
-    return sendResponse(res, statusType.OK, data,`Records fetched successful`);
-})
+    return sendResponse(res, statusType.SUCCESS, data, `Records fetched successful`);
+});
+
+export const get_holding_stocks = asyncHandler(async (req, res) => {
+    const user = req.userInfo;
+
+    const data = await knex("buy_stocks")
+        .select("*")
+        .where({ user_id: user.user_id, status: 1, is_current: 1 });
+
+    return sendResponse(res,statusType.SUCCESS, data, "Holding Stocks fetched successfully");
+});
