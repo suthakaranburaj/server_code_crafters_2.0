@@ -4,7 +4,12 @@ import { jwtTokenEncode } from "../../helper/services/jwtServices.js";
 import logger from "../../helper/services/loggingServices.js";
 import statusType from "../../helper/enum/statusTypes.js";
 import knex from "../../db/constrants.js";
-import { getIntOrNull, getObjOrNull, checkExists } from "../../helper/CommonHelper.js";
+import {
+    getIntOrNull,
+    getObjOrNull,
+    checkExists,
+    getOneOrZero
+} from "../../helper/CommonHelper.js";
 import bcrypt from "bcryptjs";
 import { uploadOnCloudinary, deleteOnCloudinary } from "../../utils/Cloudinary.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
@@ -65,7 +70,11 @@ export async function save_user(req, res) {
             name: getObjOrNull(req.body.name),
             email: getObjOrNull(req.body.email),
             phone: getObjOrNull(req.body.phone),
-            username: getObjOrNull(req.body.username)
+            username: getObjOrNull(req.body.username),
+            role: getObjOrNull(req.body.role),
+            insurances: getOneOrZero(req.body.insurances),
+            bonds: getOneOrZero(req.body.bonds),
+            company_name: getObjOrNull(req.body.company_name)
         };
 
         const validate = validateUserData(obj);
@@ -104,6 +113,17 @@ export async function save_user(req, res) {
             "The Username"
         );
         if (checkNameExists.exists) return sendResponse(res, false, null, checkNameExists.message);
+
+        const checkCompany_nameExists = await checkExists(
+            "user",
+            "user_id",
+            user_id,
+            "company_name",
+            obj.company_name,
+            "The Company Name"
+        );
+        if (checkCompany_nameExists.exists)
+            return sendResponse(res, false, null, checkCompany_nameExists.message);
 
         const passwordStr = req.body.password;
 

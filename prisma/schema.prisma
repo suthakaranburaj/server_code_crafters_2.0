@@ -13,6 +13,11 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  USER
+  COMPANY
+}
+
 model user {
   user_id                             Int                             @id @default(autoincrement())
   name                                String?
@@ -24,8 +29,12 @@ model user {
   password                            String?                         @db.VarChar(100)
   age                                 Int?
   refresh_token                       String?                         @db.Text
-  token_version                       Int                             @default(0)
+  token_version                       Int?                             @default(0)
   status                              Boolean?                        @default(true)
+  company_name                        String?                         @db.VarChar(255)
+  insurances                          Boolean?                        @default(false)
+  bonds                               Boolean?                        @default(false)
+  role                                Role?
   createdAt                           DateTime                        @default(now())
   updatedAt                           DateTime                        @default(now()) @updatedAt
 }

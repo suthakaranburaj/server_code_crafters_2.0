@@ -18,3 +18,5 @@ app.listen(PORT, async () => {
         console.error("Database connection failed:", error);
     }
 });
+
+app.use(express.json());

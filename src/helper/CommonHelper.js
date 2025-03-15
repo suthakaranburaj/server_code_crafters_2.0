@@ -18,7 +18,7 @@ export function getIntOrNull(val) {
 
 export function getOneOrZero(item) {
     if (item) {
-        if (typeof item === "string" && ["no", "n", "0"].includes(item.toLowerCase())) {
+        if (typeof item === "string" && ["no", "n", "0","false"].includes(item.toLowerCase())) {
             return 0;
         }
         return 1;
