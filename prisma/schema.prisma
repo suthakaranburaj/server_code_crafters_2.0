@@ -60,10 +60,10 @@ model buy_stocks {
   user_id         Int
   quantity        Int?
   currentAmount   Int?
-  company_id      Int
+  company_name    String?
   is_current      Boolean      @default(false)
   status          Boolean      @default(true)
-  user            user         @relation(fields: [company_id], references: [user_id])
+  user            user         @relation(fields: [user_id], references: [user_id])                 
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @default(now()) @updatedAt
 }
