@@ -52,7 +52,7 @@ export async function Login(req, res) {
             .cookie("refreshToken", refreshToken, options)
             .json({ success: true, accessToken });
     } catch (error) {
-        logger.error(error);
+        console.log(error);
         return sendResponse(res, false, null, "Login failed");
     }
 }
