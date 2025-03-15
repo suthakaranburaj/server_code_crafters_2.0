@@ -114,16 +114,16 @@ export async function save_user(req, res) {
         // );
         // if (checkNameExists.exists) return sendResponse(res, false, null, checkNameExists.message);
 
-        const checkCompany_nameExists = await checkExists(
-            "user",
-            "user_id",
-            user_id,
-            "company_name",
-            obj.company_name,
-            "The Company Name"
-        );
-        if (checkCompany_nameExists.exists)
-            return sendResponse(res, false, null, checkCompany_nameExists.message);
+        // const checkCompany_nameExists = await checkExists(
+        //     "user",
+        //     "user_id",
+        //     user_id,
+        //     "company_name",
+        //     obj.company_name,
+        //     "The Company Name"
+        // );
+        // if (checkCompany_nameExists.exists)
+        //     return sendResponse(res, false, null, checkCompany_nameExists.message);
 
         const passwordStr = req.body.password;
 
@@ -187,18 +187,16 @@ export async function save_user(req, res) {
 
 export const get_current_user = asyncHandler(async (req, res) => {
     const user = req.userInfo;
-    const [amount] = await knex('user_amount')
-    .select('user_amount.amount')
-    .where({
-        'user_amount.status':1,
-        'user_amount.is_current':1,
-        'user_amount.user_id':user.user_id,
-    })
-    if(amount){
-        user.amount = amount.amount;
-    }
-    // console.log(user)
-    return sendResponse(res, true, user, "User detials fetched successfully!");
+    const [amount] = await knex("user_amount").select("user_amount.amount").where({
+        "user_amount.status": 1,
+        "user_amount.is_current": 1,
+        "user_amount.user_id": user.user_id
+    });
+
+    // Set default to 0 if no amount is found
+    user.amount = amount?.amount ?? 0;
+
+    return sendResponse(res, true, user, "User details fetched successfully!");
 });
 
 export async function logout(req, res) {
