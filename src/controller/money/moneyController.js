@@ -112,3 +112,22 @@ export const add_money = asyncHandler(async (req, res) => {
 
     return sendResponse(res, true, { new_balance: newAmount }, "Money added successfully", 200);
 });
+
+export const get_all_transaction_records = asyncHandler(async (req, res) => {
+    const userInfo = req.userInfo;
+    console.log(userInfo)
+    const transactions = await knex("user_amount")
+        .select("*")
+        .where({
+            user_id: userInfo.user_id,
+            status: 0,
+            is_current: 0
+        })
+        .orderBy("createdAt", "desc");
+
+    if (transactions.length === 0) {
+        return sendResponse(res, true, [], "No historical transactions found", 200);
+    }
+
+    return sendResponse(res, true, transactions, "Transaction history retrieved successfully", 200);
+});

@@ -41,6 +41,7 @@ model user {
 
     // Relation to user_amount
   user_amounts                       user_amount[]
+  buy_stocks                         buy_stocks[]
 }
 
 model user_amount {
@@ -55,6 +56,14 @@ model user_amount {
 }
 
 model buy_stocks {
-  id                                  Int                             @id @default(autoincrement())
+  stock_id        Int          @id @default(autoincrement())
+  user_id         Int
+  quantity        Int?
+  company_id      Int
+  is_current      Boolean      @default(false)
+  status          Boolean      @default(true)
+  user            user         @relation(fields: [user_id], references: [user_id])
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @default(now()) @updatedAt
 }
 
