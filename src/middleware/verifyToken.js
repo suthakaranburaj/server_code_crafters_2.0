@@ -17,7 +17,7 @@ export async function verifyToken(req, res, next) {
         if (!user || user.token_version !== decoded.token_version) {
             return sendResponse(res, false, null, "Invalid token", 401);
         }
-
+        user.accessToken = token;
         req.userInfo = user;
         next();
     } catch (error) {

@@ -10,3 +10,6 @@ import {
 import bcrypt from "bcryptjs";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 
+export const buy_stocks = asyncHandler(async(req,res)=>{
+
+})
