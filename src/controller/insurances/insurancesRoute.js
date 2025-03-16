@@ -10,6 +10,7 @@ router.get("/applications", Route.getUserApplications);
 router.get("/company/applications", Route.getCompanyApplications);
 router.post("/:applicationId", Route.handleApplicationDecision);
 router.get("/", Route.getInsurances);
+router.post("/save/update", Route.updateApplication);
 // router.post("/apply", Route.);
 
 export default router;

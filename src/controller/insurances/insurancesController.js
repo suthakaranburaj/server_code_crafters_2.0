@@ -336,3 +336,21 @@ export const getInsurances = asyncHandler(async (req, res) => {
         return sendResponse(res, statusType.SUCCESS, insurances, "Insurances fetched successfully");
     }
 });
+
+export const updateApplication = asyncHandler(async (req, res) => {
+    // const user = req.userInfo;
+    const { application_id, status } = req.body;
+
+    console.log(req.body);
+
+    // Validate application_id
+    if (!application_id || isNaN(application_id)) {
+        return sendResponse(res, statusType.BAD_REQUEST, null, "Invalid application ID");
+    }
+
+    await knex("InsuranceApplication")
+        .update({ status: status })
+        .where({ application_id: Number(application_id) }); // Ensure it's a number
+
+    return sendResponse(res, statusType.SUCCESS, null, "Application updated successfully");
+});

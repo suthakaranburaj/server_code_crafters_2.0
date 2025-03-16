@@ -202,11 +202,20 @@ export const buySellBonds = asyncHandler(async (req, res) => {
 
 export const getHeldBonds = asyncHandler(async (req, res) => {
     const user = req.userInfo;
-    const holdings = await knex("buy_bonds").where({
-        user_id: user.user_id,
-        is_current: true,
-        status: true
-    });
+    const holdings = await knex("buy_bonds")
+        .select(
+            "buy_bonds.*",
+            "Bond.name as company_name",
+            "Bond.maturity_date",
+            "Bond.coupon_rate"
+        )
+        .where({
+            "buy_bonds.user_id": user.user_id,
+            "buy_bonds.is_current": true,
+            "buy_bonds.status": true
+        })
+        .leftJoin("Bond", "Bond.bond_id", "buy_bonds.bond_id");
+
     return sendResponse(res, statusType.SUCCESS, holdings, "Held bonds fetched");
 });
 
