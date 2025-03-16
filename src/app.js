@@ -11,6 +11,7 @@ import buySellStock from './controller/Stock/stockRoute.js';
 import bondsRouter from './controller/bonds/bondsRoute.js'
 import insurancesRouter from './controller/insurances/insurancesRoute.js'
 import dashBoardRouter from './controller/dashboard/DashboadRouter.js'
+import otpRoute from './controller/email/emailRoute.js'
 // import chatRoute from "./controllers/Chat/chatRoute";
 // import loginRoute from "./controllers/Login/loginRoute";
 
@@ -40,6 +41,7 @@ app.use("/api/v1/user", userRouter);
 
 
 app.use("/api/v1/stock", stockRouter);
+app.use("/api/v1/otp", otpRoute);
 app.use(verifyToken);
 app.use("/api/v1/money", moneyRouter);
 app.use("/api/v1/stocks", buySellStock);
