@@ -13,8 +13,12 @@ export const createInsurance = asyncHandler(async (req, res) => {
         return sendResponse(res, statusType.BAD_REQUEST, "Missing required fields");
     }
 
+    if(!user.insurances){
+      return sendResponse(res,statusType.BAD_REQUEST,null,"Company is not registered for insurances")
+    }
+
     try {
-        const [insurance] = await knex("insurances")
+        const [insurance] = await knex("Insurance")
             .insert({
                 user_id: user.user_id,
                 name,
@@ -45,7 +49,7 @@ export const createInsurance = asyncHandler(async (req, res) => {
 export const getInsurances = asyncHandler(async (req, res) => {
     const user = req.userInfo;
 
-    const insurances = await knex("insurances").where({ user_id: user.user_id }).select("*");
+    const insurances = await knex("Insurance").where({ user_id: user.user_id }).select("*");
 
     return sendResponse(res, statusType.SUCCESS, insurances, "Insurances fetched successfully");
 });
@@ -55,7 +59,7 @@ cron.schedule("*/20 * * * *", async () => {
     try {
         const currentDate = new Date();
 
-        const activeInsurances = await knex("insurances")
+        const activeInsurances = await knex("Insurance")
             .where({
                 is_approved: true,
                 status: true
