@@ -53,14 +53,14 @@ export const createInsurance = asyncHandler(async (req, res) => {
 export const getAllInsurances = asyncHandler(async (req, res) => {
     const user = req.userInfo;
 
-    if (user.insurances) {
-        return sendResponse(
-            res,
-            statusType.BAD_REQUEST,
-            null,
-            "Company is not allowed"
-        );
-    }
+    // if (user.insurances) {
+    //     return sendResponse(
+    //         res,
+    //         statusType.BAD_REQUEST,
+    //         null,
+    //         "Company is not allowed"
+    //     );
+    // }
 
     try {
         const insurances = await knex("Insurance").select("*");
