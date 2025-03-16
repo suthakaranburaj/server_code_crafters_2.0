@@ -229,3 +229,38 @@ export const get_available_bonds = asyncHandler(async (req, res) => {
         return sendResponse(res, statusType.INTERNAL_SERVER_ERROR, error.message);
     }
 });
+
+export const get_bonds_records = asyncHandler(async (req, res) => {
+    const user = req.userInfo;
+
+    // Verify user is a COMPANY with bonds enabled
+    if (user.role !== "COMPANY" || !user.bonds) {
+        return sendResponse(
+            res,
+            statusType.FORBIDDEN,
+            "Only bond-issuing companies can access these records"
+        );
+    }
+
+    try {
+        // Get all bond records associated with the company's bonds
+        const bondRecords = await knex("bonds_records")
+            .join("Bond", "bonds_records.bond_id", "Bond.bond_id")
+            .where("Bond.company_id", user.user_id)
+            .select(
+                "bonds_records.*",
+                "Bond.name as bond_name",
+                "Bond.face_value",
+                "Bond.coupon_rate"
+            );
+
+        return sendResponse(
+            res,
+            statusType.SUCCESS,
+            bondRecords,
+            "Bond transaction records retrieved successfully"
+        );
+    } catch (error) {
+        return sendResponse(res, statusType.INTERNAL_SERVER_ERROR, error.message);
+    }
+});
