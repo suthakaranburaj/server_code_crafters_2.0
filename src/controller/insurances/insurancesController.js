@@ -50,6 +50,32 @@ export const createInsurance = asyncHandler(async (req, res) => {
     }
 });
 
+export const getAllInsurances = asyncHandler(async (req, res) => {
+    const user = req.userInfo;
+
+    if (user.insurances) {
+        return sendResponse(
+            res,
+            statusType.BAD_REQUEST,
+            null,
+            "Company is not allowed"
+        );
+    }
+
+    try {
+        const insurances = await knex("Insurance").select("*");
+
+        return sendResponse(
+            res,
+            statusType.SUCCESS,
+            insurances,
+            "Insurances retrieved successfully"
+        );
+    } catch (error) {
+        return sendResponse(res, statusType.BAD_REQUEST, error.message);
+    }
+});
+
 export const applyForInsurance = asyncHandler(async (req, res) => {
     const user = req.userInfo;
     const {

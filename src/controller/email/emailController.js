@@ -1,4 +1,5 @@
 import transporter from "../../utils/emailer.js";
+import { sendResponse } from "../../utils/apiResponse.js";
 // Controller to send OTP email
 const sendOtpEmail = (req, res) => {
     const { email, otp } = req.body;
