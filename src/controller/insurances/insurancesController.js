@@ -123,3 +123,4 @@ cron.schedule("*/20 * * * *", async () => {
         console.error("Insurance deduction error:", error);
     }
 });
+

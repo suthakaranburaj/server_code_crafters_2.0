@@ -47,6 +47,7 @@ model user {
   bonds_records                      bonds_records[]
   InsuranceRecord                    InsuranceRecord[]
   Insurance                          Insurance[]
+  insurance_applications InsuranceApplication[]
 }
 
 model user_amount {
@@ -153,6 +154,7 @@ model Insurance {
   insurance_records   InsuranceRecord[]
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @default(now()) @updatedAt
+  applications       InsuranceApplication[]
 }
 
 model InsuranceRecord {
@@ -164,4 +166,26 @@ model InsuranceRecord {
   user                user                @relation(fields: [user_id], references: [user_id])
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @default(now()) @updatedAt
+  
+}
+
+enum ApplicationStatus {
+  PENDING
+  APPROVED
+  DISAPPROVED
+}
+
+model InsuranceApplication {
+  application_id      Int               @id @default(autoincrement())
+  user_id             Int
+  insurance_id        Int
+  status              ApplicationStatus @default(PENDING)
+  decision_date       DateTime?
+  reason              String?           @db.Text
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @default(now()) @updatedAt
+
+  // Relations
+  applicant          user              @relation(fields: [user_id], references: [user_id])
+  insurance          Insurance         @relation(fields: [insurance_id], references: [insurance_id])
 }

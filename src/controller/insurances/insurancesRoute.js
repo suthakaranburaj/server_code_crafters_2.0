@@ -6,5 +6,6 @@ const router = express.Router();
 // Define the route for fetching NSE data
 router.post("/create", Route.createInsurance);
 router.get("/", Route.getInsurances);
+// router.post("/apply", Route.);
 
 export default router;

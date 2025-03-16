@@ -209,3 +209,23 @@ export const getHeldBonds = asyncHandler(async (req, res) => {
     });
     return sendResponse(res, statusType.SUCCESS, holdings, "Held bonds fetched");
 });
+
+export const get_available_bonds = asyncHandler(async (req, res) => {
+    try {
+        const availableBonds = await knex("Bond")
+            .join("user", "Bond.company_id", "user.user_id")
+            .select("Bond.*", "user.name as company_name")
+            .where("Bond.status", true)
+            .andWhere("Bond.remaining", ">", 0)
+            .andWhere("Bond.maturity_date", ">", knex.fn.now());
+
+        return sendResponse(
+            res,
+            statusType.SUCCESS,
+            availableBonds,
+            "Available bonds fetched successfully"
+        );
+    } catch (error) {
+        return sendResponse(res, statusType.INTERNAL_SERVER_ERROR, error.message);
+    }
+});
