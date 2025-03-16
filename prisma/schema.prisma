@@ -181,6 +181,16 @@ model InsuranceApplication {
   insurance_id        Int
   status              ApplicationStatus @default(PENDING)
   decision_date       DateTime?
+  age                 Int?
+  gender              String?
+  height              Int? 
+  weight              Int?
+  smoking_status      String?
+  cigarettes_per_day  Int?
+  alcohol_consumption String?
+  physical_activity   String?
+  dietary_habits      String?
+  occupation          String?
   reason              String?           @db.Text
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @default(now()) @updatedAt
