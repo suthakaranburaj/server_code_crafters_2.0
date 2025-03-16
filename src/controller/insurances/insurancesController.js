@@ -331,7 +331,17 @@ export const getInsurances = asyncHandler(async (req, res) => {
 
         return sendResponse(res, statusType.SUCCESS, insurances, "Insurances fetched successfully");
     } else {
-        const insurances = await knex("Insurance").where({ status: 1 }).select("*");
+        const insurances = await knex("InsuranceApplication")
+            .where({ "InsuranceApplication.user_id": user.user_id })
+            .select(
+                "InsuranceApplication.*",
+                "Insurance.name as company_name",
+                "Insurance.coverage_amount as coverage_amount",
+                "Insurance.premium_amount as premium_amount",
+                "Insurance.start_date as start_date",
+                "Insurance.end_date as end_date"
+            )
+            .leftJoin("Insurance", "InsuranceApplication.insurance_id", "Insurance.insurance_id");
 
         return sendResponse(res, statusType.SUCCESS, insurances, "Insurances fetched successfully");
     }
