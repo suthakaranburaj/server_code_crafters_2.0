@@ -3,6 +3,7 @@ import statusType from "../../helper/enum/statusTypes.js";
 import knex from "../../db/constrants.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import cron from "node-cron";
+import axios from "axios";
 
 export const createInsurance = asyncHandler(async (req, res) => {
     const user = req.userInfo;
@@ -51,12 +52,25 @@ export const createInsurance = asyncHandler(async (req, res) => {
 
 export const applyForInsurance = asyncHandler(async (req, res) => {
     const user = req.userInfo;
-    const { insurance_id } = req.body;
+    const {
+        insurance_id,
+        age,
+        gender,
+        height,
+        weight,
+        smoking_status,
+        cigarettes_per_day,
+        alcohol_consumption,
+        physical_activity,
+        dietary_habits,
+        occupation
+    } = req.body;
 
     if (!insurance_id) {
         return sendResponse(res, statusType.BAD_REQUEST, "Insurance ID is required");
     }
-
+    //localhost:8000/risk/predict
+    // console.log(req.body)
     if (user.role !== "USER") {
         return sendResponse(
             res,
@@ -94,15 +108,31 @@ export const applyForInsurance = asyncHandler(async (req, res) => {
                 "You already have a pending application for this policy"
             );
         }
+        console.log("heee");
+        const riskResponse = await axios.post("http://localhost:8000/risk/predict/", {
+            age,
+            gender,
+            height,
+            weight,
+            smoking_status,
+            cigarettes_per_day,
+            alcohol_consumption,
+            physical_activity,
+            dietary_habits,
+            occupation
+        });
 
-        // Create new application
+        const failRate = riskResponse.data.risk_percentage;
+        console.log(failRate);
+
         const [application] = await knex("InsuranceApplication")
             .insert({
                 user_id: user.user_id,
                 insurance_id,
                 status: "PENDING",
                 createdAt: knex.fn.now(),
-                updatedAt: knex.fn.now()
+                updatedAt: knex.fn.now(),
+                failRate: failRate
             })
             .returning("*");
 
@@ -301,7 +331,7 @@ export const getInsurances = asyncHandler(async (req, res) => {
 
         return sendResponse(res, statusType.SUCCESS, insurances, "Insurances fetched successfully");
     } else {
-        const insurances = await knex("Insurance").where({ status:1 }).select("*");
+        const insurances = await knex("Insurance").where({ status: 1 }).select("*");
 
         return sendResponse(res, statusType.SUCCESS, insurances, "Insurances fetched successfully");
     }
