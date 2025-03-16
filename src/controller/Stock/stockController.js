@@ -19,7 +19,7 @@ export const buy_sell_stocks = asyncHandler(async (req, res) => {
         return sendResponse(res, statusType.BAD_REQUEST, "Quantity must be a positive integer");
     }
 
-    if (!Number.isInteger(currentAmount) || currentAmount <= 0) {
+    if ( currentAmount <= 0) {
         return sendResponse(
             res,
             statusType.BAD_REQUEST,

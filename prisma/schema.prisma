@@ -45,15 +45,17 @@ model user {
   Bond                               Bond[]
   buy_bonds                          buy_bonds[]
   bonds_records                      bonds_records[]
+  InsuranceRecord                    InsuranceRecord[]
+  Insurance                          Insurance[]
 }
 
 model user_amount {
   user_amount_id                      Int                             @id @default(autoincrement())
-  amount                              Int?
+  amount                              Float?
   status                              Boolean?                        @default(true)
   user_id                             Int
   is_current                          Boolean?                        @default(false)
-  amount_spend                        Int?
+  amount_spend                        Float?
   type                                String?                         @db.VarChar(255)
   profit                              Boolean?                        @default(false)
   user                                user                            @relation(fields: [user_id], references: [user_id])
@@ -65,7 +67,7 @@ model buy_stocks {
   stock_id        Int          @id @default(autoincrement())
   user_id         Int
   quantity        Int?
-  currentAmount   Int?
+  currentAmount   Float?
   company_name    String?
   is_current      Boolean      @default(false)
   status          Boolean      @default(true)
@@ -80,9 +82,9 @@ model stocks_records {
   type                String   
   company_name        String?
   quantity            Int?
-  price               Int?     
-  amount_spend        Int?     
-  profit              Int?     
+  price               Float?     
+  amount_spend        Float?     
+  profit              Float?     
   createdAt           DateTime @default(now())
   updatedAt           DateTime @default(now()) @updatedAt
 }
@@ -92,9 +94,9 @@ model Bond {
   company_id       Int
   name             String          @db.VarChar(255)
   description      String?         @db.Text
-  face_value       Int
+  face_value       Float
   coupon_rate      Float
-  total_amount     Int
+  total_amount     Float
   remaining        Int
   maturity_date    DateTime
   status           Boolean         @default(true)
@@ -111,7 +113,7 @@ model buy_bonds {
   user_id          Int
   bond_id          Int
   quantity         Int?
-  purchase_price   Int?
+  purchase_price   Float?
   is_current       Boolean?         @default(true)
   status           Boolean?         @default(true)
   user             user            @relation(fields: [user_id], references: [user_id])
@@ -126,12 +128,40 @@ model bonds_records {
   bond_id          Int
   type             String?          @db.VarChar(4)
   quantity         Int?
-  price            Int?
-  amount_spend     Int?
-  profit           Int?
+  price            Float?
+  amount_spend     Float?
+  profit           Float?
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @default(now()) @updatedAt
 
   user             user            @relation(fields: [user_id], references: [user_id])
   bond             Bond            @relation(fields: [bond_id], references: [bond_id])
+}
+
+model Insurance {
+  insurance_id        Int                 @id @default(autoincrement())
+  user_id             Int
+  name                String
+  description         String?
+  coverage_amount     Float
+  premium_amount      Float
+  start_date          DateTime
+  end_date            DateTime
+  is_approved         Boolean             @default(false)
+  status              Boolean             @default(true)
+  user                user                @relation(fields: [user_id], references: [user_id])
+  insurance_records   InsuranceRecord[]
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @default(now()) @updatedAt
+}
+
+model InsuranceRecord {
+  record_id           Int                 @id @default(autoincrement())
+  insurance_id        Int
+  user_id             Int
+  amount_deducted     Int
+  insurance           Insurance           @relation(fields: [insurance_id], references: [insurance_id])
+  user                user                @relation(fields: [user_id], references: [user_id])
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @default(now()) @updatedAt
 }

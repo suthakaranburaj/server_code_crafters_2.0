@@ -9,6 +9,7 @@ import stockRouter from "./controller/Stock/nifty50Routes.js";
 import moneyRouter from './controller/money/moneyRoute.js';
 import buySellStock from './controller/Stock/stockRoute.js';
 import bondsRouter from './controller/bonds/bondsRoute.js'
+import insurancesRouter from './controller/insurances/insurancesRoute.js'
 // import chatRoute from "./controllers/Chat/chatRoute";
 // import loginRoute from "./controllers/Login/loginRoute";
 
@@ -42,6 +43,7 @@ app.use(verifyToken);
 app.use("/api/v1/money", moneyRouter);
 app.use("/api/v1/stocks", buySellStock);
 app.use("/api/v1/bonds", bondsRouter);
+app.use("/api/v1/insurances", insurancesRouter);
 // app.use("/api/v1/chat", chatRoute);
 // app.use("/api/v1/login", loginRoute);
 
