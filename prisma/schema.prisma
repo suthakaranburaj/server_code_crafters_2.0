@@ -42,6 +42,9 @@ model user {
     // Relation to user_amount
   user_amounts                       user_amount[]
   buy_stocks                         buy_stocks[]
+  Bond                               Bond[]
+  buy_bonds                          buy_bonds[]
+  bonds_records                      bonds_records[]
 }
 
 model user_amount {
@@ -82,4 +85,53 @@ model stocks_records {
   profit              Int?     
   createdAt           DateTime @default(now())
   updatedAt           DateTime @default(now()) @updatedAt
+}
+
+model Bond {
+  bond_id          Int             @id @default(autoincrement())
+  company_id       Int
+  name             String          @db.VarChar(255)
+  description      String?         @db.Text
+  face_value       Int
+  coupon_rate      Float
+  total_amount     Int
+  remaining        Int
+  maturity_date    DateTime
+  status           Boolean         @default(true)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @default(now()) @updatedAt
+
+  company          user            @relation(fields: [company_id], references: [user_id])
+  buy_bonds        buy_bonds[]
+  bonds_records    bonds_records[]
+}
+
+model buy_bonds {
+  bond_purchase_id Int             @id @default(autoincrement())
+  user_id          Int
+  bond_id          Int
+  quantity         Int?
+  purchase_price   Int?
+  is_current       Boolean?         @default(true)
+  status           Boolean?         @default(true)
+  user             user            @relation(fields: [user_id], references: [user_id])
+  bond             Bond            @relation(fields: [bond_id], references: [bond_id])
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @default(now()) @updatedAt
+}
+
+model bonds_records {
+  bond_record_id   Int             @id @default(autoincrement())
+  user_id          Int
+  bond_id          Int
+  type             String?          @db.VarChar(4)
+  quantity         Int?
+  price            Int?
+  amount_spend     Int?
+  profit           Int?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @default(now()) @updatedAt
+
+  user             user            @relation(fields: [user_id], references: [user_id])
+  bond             Bond            @relation(fields: [bond_id], references: [bond_id])
 }

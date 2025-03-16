@@ -74,7 +74,7 @@ export async function save_user(req, res) {
             role: getObjOrNull(req.body.role),
             insurances: getOneOrZero(req.body.insurances),
             bonds: getOneOrZero(req.body.bonds),
-            company_name: getObjOrNull(req.body.company_name)
+            company_name: getObjOrNull(req.body.company_name),
         };
         const validate = validateUserData(obj);
         if (!validate.status)
