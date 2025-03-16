@@ -25,19 +25,16 @@ export const userDashBoard = asyncHandler(async (req, res) => {
             stockLoss,
             bondLoss
         ] = await Promise.all([
-            // Current Balance
             knex("user_amount")
                 .where({ user_id: userId, is_current: true })
                 .select("amount")
                 .first(),
 
-            // Total Amount Spent (all non-profit transactions)
             knex("user_amount")
                 .where({ user_id: userId, profit: false })
                 .sum("amount_spend as total")
                 .first(),
 
-            // Total Profit (all profit transactions)
             knex("user_amount")
                 .where({ user_id: userId, profit: true })
                 .sum("amount_spend as total")
@@ -49,10 +46,10 @@ export const userDashBoard = asyncHandler(async (req, res) => {
                 .sum("currentAmount as total")
                 .first(),
 
-            // Current Bond Investments
+            // Current Bond Investments (FIXED)
             knex("buy_bonds")
                 .where({ user_id: userId, is_current: true, status: true })
-                .sum(knex.raw("purchase_price * quantity as total"))
+                .select(knex.raw("SUM(purchase_price * quantity) AS total"))
                 .first(),
 
             // Total Insurance Premiums Paid
@@ -86,7 +83,7 @@ export const userDashBoard = asyncHandler(async (req, res) => {
                 .where("user_id", userId)
                 .where("profit", "<", 0)
                 .sum("profit as total")
-                .first(),
+                .first()
         ]);
 
         const totalReturns = 

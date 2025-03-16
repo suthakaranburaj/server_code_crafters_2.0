@@ -53,9 +53,9 @@ export const detect_money = asyncHandler(async (req, res) => {
     if (!insert_balance) {
         return sendResponse(res, false, null, "Failed to add money", 400);
     }
-    await knex("user")
-        .update("user.amount", current_balance)
-        .where({ "user.status": 1, "user.user_id": userInfo.user_id });
+    // await knex("user")
+    //     .update("user.amount", current_balance)
+    //     .where({ "user.status": 1, "user.user_id": userInfo.user_id });
     return sendResponse(
         res,
         true,

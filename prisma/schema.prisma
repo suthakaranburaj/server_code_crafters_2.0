@@ -40,7 +40,7 @@ model user {
   updatedAt                           DateTime                        @default(now()) @updatedAt
 
     // Relation to user_amount
-  user_amounts                       user_amount[]
+  user_amount                       user_amount[]
   buy_stocks                         buy_stocks[]
   Bond                               Bond[]
   buy_bonds                          buy_bonds[]
