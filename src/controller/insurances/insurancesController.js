@@ -4,7 +4,6 @@ import knex from "../../db/constrants.js";
 import { asyncHandler } from "../../utils/asyncHandler.js";
 import cron from "node-cron";
 
-// Create Insurance Policy
 export const createInsurance = asyncHandler(async (req, res) => {
     const user = req.userInfo;
     const { name, description, coverage_amount, premium_amount, start_date, end_date } = req.body;
@@ -13,8 +12,13 @@ export const createInsurance = asyncHandler(async (req, res) => {
         return sendResponse(res, statusType.BAD_REQUEST, "Missing required fields");
     }
 
-    if(!user.insurances){
-      return sendResponse(res,statusType.BAD_REQUEST,null,"Company is not registered for insurances")
+    if (!user.insurances) {
+        return sendResponse(
+            res,
+            statusType.BAD_REQUEST,
+            null,
+            "Company is not registered for insurances"
+        );
     }
 
     try {
@@ -45,77 +49,243 @@ export const createInsurance = asyncHandler(async (req, res) => {
     }
 });
 
-// Get User's Insurance Policies
-export const getInsurances = asyncHandler(async (req, res) => {
+export const applyForInsurance = asyncHandler(async (req, res) => {
     const user = req.userInfo;
+    const { insurance_id } = req.body;
 
-    const insurances = await knex("Insurance").where({ user_id: user.user_id }).select("*");
+    if (!insurance_id) {
+        return sendResponse(res, statusType.BAD_REQUEST, "Insurance ID is required");
+    }
 
-    return sendResponse(res, statusType.SUCCESS, insurances, "Insurances fetched successfully");
+    if (user.role !== "USER") {
+        return sendResponse(
+            res,
+            statusType.FORBIDDEN,
+            "Only regular users can apply for insurance"
+        );
+    }
+
+    try {
+        // Check insurance exists and is active
+        const insurance = await knex("Insurance")
+            .where({
+                insurance_id,
+                status: true
+            })
+            .first();
+
+        if (!insurance) {
+            return sendResponse(res, statusType.NOT_FOUND, "Active insurance policy not found");
+        }
+
+        // Check for existing application
+        const existingApplication = await knex("InsuranceApplication")
+            .where({
+                user_id: user.user_id,
+                insurance_id,
+                status: "PENDING"
+            })
+            .first();
+
+        if (existingApplication) {
+            return sendResponse(
+                res,
+                statusType.BAD_REQUEST,
+                "You already have a pending application for this policy"
+            );
+        }
+
+        // Create new application
+        const [application] = await knex("InsuranceApplication")
+            .insert({
+                user_id: user.user_id,
+                insurance_id,
+                status: "PENDING",
+                createdAt: knex.fn.now(),
+                updatedAt: knex.fn.now()
+            })
+            .returning("*");
+
+        return sendResponse(
+            res,
+            statusType.SUCCESS,
+            application,
+            "Insurance application submitted successfully"
+        );
+    } catch (error) {
+        return sendResponse(res, statusType.BAD_REQUEST, error.message);
+    }
 });
 
-// Scheduled Insurance Deduction (Run every 20 minutes)
+export const getUserApplications = asyncHandler(async (req, res) => {
+    const user = req.userInfo;
+
+    const applications = await knex("InsuranceApplication")
+        .leftJoin("Insurance", "InsuranceApplication.insurance_id", "Insurance.insurance_id")
+        .where({
+            "InsuranceApplication.status": "PENDING",
+            "Insurance.user_id": user.user_id // company's user_id
+        })
+        .select("*");
+
+    return sendResponse(
+        res,
+        statusType.SUCCESS,
+        applications,
+        "Applications retrieved successfully"
+    );
+});
+
+export const getCompanyApplications = asyncHandler(async (req, res) => {
+    const user = req.userInfo;
+
+    if (user.role !== "COMPANY" || !user.insurances) {
+        return sendResponse(
+            res,
+            statusType.FORBIDDEN,
+            "Not authorized to view insurance applications"
+        );
+    }
+
+    const applications = await knex("InsuranceApplication")
+        .whereIn(
+            "insurance_id",
+            knex("Insurance").where("user_id", user.user_id).select("insurance_id")
+        )
+        .select("*");
+
+    return sendResponse(
+        res,
+        statusType.SUCCESS,
+        applications,
+        "Company applications retrieved successfully"
+    );
+});
+
+export const handleApplicationDecision = asyncHandler(async (req, res) => {
+    const user = req.userInfo;
+    const { applicationId } = req.params;
+    const { status, reason } = req.body;
+
+    if (!["APPROVED", "DISAPPROVED"].includes(status)) {
+        return sendResponse(res, statusType.BAD_REQUEST, "Invalid decision status");
+    }
+
+    try {
+        // Verify company owns the insurance policy
+        const application = await knex("InsuranceApplication")
+            .where("application_id", applicationId)
+            .first();
+
+        if (!application) {
+            return sendResponse(res, statusType.NOT_FOUND, "Application not found");
+        }
+
+        const insurance = await knex("Insurance")
+            .where({
+                insurance_id: application.insurance_id,
+                user_id: user.user_id
+            })
+            .first();
+
+        if (!insurance) {
+            return sendResponse(
+                res,
+                statusType.FORBIDDEN,
+                "Not authorized to modify this application"
+            );
+        }
+
+        // Update application status
+        const [updatedApplication] = await knex("InsuranceApplication")
+            .where("application_id", applicationId)
+            .update({
+                status,
+                reason,
+                decision_date: knex.fn.now(),
+                updatedAt: knex.fn.now()
+            })
+            .returning("*");
+
+        return sendResponse(
+            res,
+            statusType.SUCCESS,
+            updatedApplication,
+            "Application decision updated successfully"
+        );
+    } catch (error) {
+        return sendResponse(res, statusType.BAD_REQUEST, error.message);
+    }
+});
+
 cron.schedule("*/20 * * * *", async () => {
     try {
         const currentDate = new Date();
 
-        const activeInsurances = await knex("Insurance")
-            .where({
-                is_approved: true,
-                status: true
-            })
-            .where("start_date", "<=", currentDate)
-            .where("end_date", ">=", currentDate)
+        const activeApplications = await knex("InsuranceApplication")
+            .where("status", "APPROVED")
+            .whereIn(
+                "insurance_id",
+                knex("Insurance")
+                    .where({
+                        is_approved: true,
+                        status: true
+                    })
+                    .where("start_date", "<=", currentDate)
+                    .where("end_date", ">=", currentDate)
+                    .select("insurance_id")
+            )
             .select("*");
 
-        for (const insurance of activeInsurances) {
+        for (const application of activeApplications) {
             await knex.transaction(async (trx) => {
-                // Get current user balance
-                const [currentUserAmount] = await trx("user_amount")
+                // Get user's current balance
+                const [currentBalance] = await trx("user_amount")
                     .where({
-                        user_id: insurance.user_id,
+                        user_id: application.user_id,
                         is_current: true,
                         status: true
                     })
                     .select("*");
 
-                if (!currentUserAmount || currentUserAmount.amount < insurance.premium_amount) {
-                    console.log(
-                        `Insufficient balance for insurance deduction: ${insurance.insurance_id}`
-                    );
+                if (!currentBalance || currentBalance.amount < application.premium_amount) {
+                    console.log(`Insufficient balance for user ${application.user_id}`);
                     return;
                 }
 
                 // Update user balance
-                const newBalance = currentUserAmount.amount - insurance.premium_amount;
+                const newBalance = currentBalance.amount - application.premium_amount;
 
                 await trx("user_amount")
-                    .where({ user_amount_id: currentUserAmount.user_amount_id })
-                    .update({ is_current: false, status: false });
+                    .where("user_amount_id", currentBalance.user_amount_id)
+                    .update({
+                        is_current: false,
+                        status: false
+                    });
 
                 await trx("user_amount").insert({
-                    user_id: insurance.user_id,
+                    user_id: application.user_id,
                     amount: newBalance,
                     status: true,
                     is_current: true,
                     type: "insurance",
-                    amount_spend: insurance.premium_amount,
+                    amount_spend: application.premium_amount,
                     profit: false,
                     createdAt: knex.fn.now(),
                     updatedAt: knex.fn.now()
                 });
 
-                // Create insurance record
+                // Create insurance deduction record
                 await trx("insurance_records").insert({
-                    insurance_id: insurance.insurance_id,
-                    user_id: insurance.user_id,
-                    amount_deducted: insurance.premium_amount,
+                    insurance_id: application.insurance_id,
+                    user_id: application.user_id,
+                    amount_deducted: application.premium_amount,
                     createdAt: knex.fn.now(),
                     updatedAt: knex.fn.now()
                 });
 
                 console.log(
-                    `Deducted ${insurance.premium_amount} for insurance ${insurance.insurance_id}`
+                    `Deducted ${application.premium_amount} from user ${application.user_id}`
                 );
             });
         }
@@ -123,4 +293,3 @@ cron.schedule("*/20 * * * *", async () => {
         console.error("Insurance deduction error:", error);
     }
 });
-
