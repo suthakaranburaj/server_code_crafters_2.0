@@ -293,3 +293,16 @@ cron.schedule("*/20 * * * *", async () => {
         console.error("Insurance deduction error:", error);
     }
 });
+export const getInsurances = asyncHandler(async (req, res) => {
+    const user = req.userInfo;
+
+    if (user.role === "COMPANY") {
+        const insurances = await knex("Insurance").where({ user_id: user.user_id }).select("*");
+
+        return sendResponse(res, statusType.SUCCESS, insurances, "Insurances fetched successfully");
+    } else {
+        const insurances = await knex("Insurance").where({ status:1 }).select("*");
+
+        return sendResponse(res, statusType.SUCCESS, insurances, "Insurances fetched successfully");
+    }
+});
