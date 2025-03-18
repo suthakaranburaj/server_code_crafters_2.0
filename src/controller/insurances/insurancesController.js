@@ -274,81 +274,81 @@ export const handleApplicationDecision = asyncHandler(async (req, res) => {
     }
 });
 
-cron.schedule("*/20 * * * *", async () => {
-    try {
-        const currentDate = new Date();
+// cron.schedule("*/20 * * * *", async () => {
+//     try {
+//         const currentDate = new Date();
 
-        const activeApplications = await knex("InsuranceApplication")
-            .where("status", "APPROVED")
-            .whereIn(
-                "insurance_id",
-                knex("Insurance")
-                    .where({
-                        is_approved: true,
-                        status: true
-                    })
-                    .where("start_date", "<=", currentDate)
-                    .where("end_date", ">=", currentDate)
-                    .select("insurance_id")
-            )
-            .select("*");
+//         const activeApplications = await knex("InsuranceApplication")
+//             .where("status", "APPROVED")
+//             .whereIn(
+//                 "insurance_id",
+//                 knex("Insurance")
+//                     .where({
+//                         is_approved: true,
+//                         status: true
+//                     })
+//                     .where("start_date", "<=", currentDate)
+//                     .where("end_date", ">=", currentDate)
+//                     .select("insurance_id")
+//             )
+//             .select("*");
 
-        for (const application of activeApplications) {
-            await knex.transaction(async (trx) => {
-                // Get user's current balance
-                const [currentBalance] = await trx("user_amount")
-                    .where({
-                        user_id: application.user_id,
-                        is_current: true,
-                        status: true
-                    })
-                    .select("*");
+//         for (const application of activeApplications) {
+//             await knex.transaction(async (trx) => {
+//                 // Get user's current balance
+//                 const [currentBalance] = await trx("user_amount")
+//                     .where({
+//                         user_id: application.user_id,
+//                         is_current: true,
+//                         status: true
+//                     })
+//                     .select("*");
 
-                if (!currentBalance || currentBalance.amount < application.premium_amount) {
-                    console.log(`Insufficient balance for user ${application.user_id}`);
-                    return;
-                }
+//                 if (!currentBalance || currentBalance.amount < application.premium_amount) {
+//                     console.log(`Insufficient balance for user ${application.user_id}`);
+//                     return;
+//                 }
 
-                // Update user balance
-                const newBalance = currentBalance.amount - application.premium_amount;
+//                 // Update user balance
+//                 const newBalance = currentBalance.amount - application.premium_amount;
 
-                await trx("user_amount")
-                    .where("user_amount_id", currentBalance.user_amount_id)
-                    .update({
-                        is_current: false,
-                        status: false
-                    });
+//                 await trx("user_amount")
+//                     .where("user_amount_id", currentBalance.user_amount_id)
+//                     .update({
+//                         is_current: false,
+//                         status: false
+//                     });
 
-                await trx("user_amount").insert({
-                    user_id: application.user_id,
-                    amount: newBalance,
-                    status: true,
-                    is_current: true,
-                    type: "insurance",
-                    amount_spend: application.premium_amount,
-                    profit: false,
-                    createdAt: knex.fn.now(),
-                    updatedAt: knex.fn.now()
-                });
+//                 await trx("user_amount").insert({
+//                     user_id: application.user_id,
+//                     amount: newBalance,
+//                     status: true,
+//                     is_current: true,
+//                     type: "insurance",
+//                     amount_spend: application.premium_amount,
+//                     profit: false,
+//                     createdAt: knex.fn.now(),
+//                     updatedAt: knex.fn.now()
+//                 });
 
-                // Create insurance deduction record
-                await trx("insurance_records").insert({
-                    insurance_id: application.insurance_id,
-                    user_id: application.user_id,
-                    amount_deducted: application.premium_amount,
-                    createdAt: knex.fn.now(),
-                    updatedAt: knex.fn.now()
-                });
+//                 // Create insurance deduction record
+//                 await trx("insurance_records").insert({
+//                     insurance_id: application.insurance_id,
+//                     user_id: application.user_id,
+//                     amount_deducted: application.premium_amount,
+//                     createdAt: knex.fn.now(),
+//                     updatedAt: knex.fn.now()
+//                 });
 
-                console.log(
-                    `Deducted ${application.premium_amount} from user ${application.user_id}`
-                );
-            });
-        }
-    } catch (error) {
-        console.error("Insurance deduction error:", error);
-    }
-});
+//                 console.log(
+//                     `Deducted ${application.premium_amount} from user ${application.user_id}`
+//                 );
+//             });
+//         }
+//     } catch (error) {
+//         console.error("Insurance deduction error:", error);
+//     }
+// });
 export const getInsurances = asyncHandler(async (req, res) => {
     const user = req.userInfo;
 

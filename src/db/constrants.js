@@ -33,14 +33,14 @@ export function knexDb(DB_NAME) {
             database: DB_NAME,
             password: process.env.DB_PASSWORD,
             port: Number(process.env.DB_PORT) || 3306,
-            timezone: "Asia/Kolkata"
+            timezone: "Asia/Kolkata",
             // host: process.env.DB_HOST as string,
             // user: process.env.DB_USER as string,
             // database: DB_NAME,
             // password: "suthakar,,,",
             // port: 5432,
             // timezone: "utc",
-            // ssl: { rejectUnauthorized: false },
+            ssl: { rejectUnauthorized: false },
         }
     });
 }
